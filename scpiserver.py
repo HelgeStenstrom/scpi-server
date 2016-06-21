@@ -38,7 +38,7 @@ class CmdTCPServer(socketserver.ThreadingTCPServer):
     daemon_threads = True
     #: much faster rebinding possible
     allow_reuse_address = True
-    address_family = socket.AF_INET6
+    address_family = socket.AF_INET
 
     class CmdRequestHandler(socketserver.StreamRequestHandler):
         def handle(self):
@@ -113,6 +113,7 @@ def main():
         choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'])
     args = parser.parse_args()
     logging.basicConfig(format='%(message)s', level=args.loglevel.upper())
+    logger.info('Starting an example SCPI server.')
     scpi_server = SCPIServerExample((args.host, args.port))
     try:
         scpi_server.serve_forever()
