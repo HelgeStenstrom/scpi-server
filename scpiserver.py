@@ -21,11 +21,15 @@ try:
     import socketserver
 except ImportError:
     import SocketServer as socketserver
-import socket, threading
-import argparse, random, logging
+import socket
+import threading
+import argparse
+import random
+import logging
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 logger = logging.getLogger('scpi-server')
+
 
 class CmdTCPServer(socketserver.ThreadingTCPServer):
     """
@@ -54,21 +58,27 @@ class CmdTCPServer(socketserver.ThreadingTCPServer):
                 self.log(DEBUG, 'The client {client} closed the connection')
             finally:
                 self.server.lock.release()
+
         def read_cmd(self):
             return self.rfile.readline().decode('utf-8').strip()
+
         def log(self, level, msg, *args, **kwargs):
             if type(level) == str:
                 level = getattr(logging, level.upper())
             msg = msg.format(client=self.client_address[0])
             logger.log(level, msg, *args, **kwargs)
+
         def send_reply(self, reply):
             if type(reply) == str:
-                if self.server.newline: reply += self.server.newline
+                if self.server.newline:
+                    reply += self.server.newline
                 reply = reply.encode('utf-8')
             self.wfile.write(reply)
+
         def single_cmd(self):
             cmd = self.read_cmd()
-            if not cmd: raise Disconnected
+            if not cmd:
+                raise Disconnected
             self.log(DEBUG, 'Received a cmd: {}'.format(cmd))
             try:
                 reply = self.server.process(cmd)
@@ -91,26 +101,28 @@ class CmdTCPServer(socketserver.ThreadingTCPServer):
         """
         raise NotImplemented
 
+
 class SCPIServerExample(CmdTCPServer):
 
-    def process(self, cmd):
+    def process(self, cmd=""):
         """
         This is the method to process each SCPI command
         received from the client.
         """
-        if cmd.startswith('*IDN?'):
+        if cmd.upper().startswith('*IDN?'):
             return self.name
-        if cmd.startswith('READ?'):
+        if cmd.upper().startswith('READ?'):
             return '{:+.6E}'.format(random.random())
         else:
-            return 'unknown cmd'
+            return 'Unknown command'
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[1])
     parser.add_argument('--port', type=int, default=5025, help='TCP port to listen to.')
-    parser.add_argument('--host', default='::', help='The host / IP address to listen at.')
+    parser.add_argument('--host', default='localhost', help='The host / IP address to listen at.')
     parser.add_argument('--loglevel', default='INFO', help='log level',
-        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'])
+                        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'])
     args = parser.parse_args()
     logging.basicConfig(format='%(message)s', level=args.loglevel.upper())
     logger.info('Starting an example SCPI server.')
@@ -121,7 +133,9 @@ def main():
         logger.info('Ctrl-C pressed. Shutting down...')
     scpi_server.server_close()
 
-class Disconnected(Exception): pass
+
+class Disconnected(Exception):
+    pass
 
 if __name__ == "__main__":
     main()

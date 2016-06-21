@@ -1,10 +1,10 @@
 import scpiserver as ss
 import unittest
 
+
 class SomeTests(unittest.TestCase):
     def setUp(self):
         self.server_address = ('localhost', 9876)
-
 
     def testPass(self):
         pass
