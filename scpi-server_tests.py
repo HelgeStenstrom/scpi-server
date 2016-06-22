@@ -1,5 +1,6 @@
 import scpiserver as ss
 import unittest
+import socket
 
 
 class SomeTests(unittest.TestCase):
@@ -10,7 +11,23 @@ class SomeTests(unittest.TestCase):
         pass
 
     def testCreate(self):
-        c = ss.SCPIServerExample(self.server_address)
+        theServer = ss.SCPIServerExample(self.server_address)
 
     def testC(self):
-        c = ss.SCPIServerExample(self.server_address)
+        server = ss.SCPIServerExample(self.server_address)
+        print("server created")
+
+        #print("server started")
+        # todo: gör en klient, som kan prata med servern.
+        client = socket.create_connection(self.server_address)
+        print("client created")
+
+        client.close()
+        print("client closed")
+
+        # Det här verkar inte hända. Varför? Är inte servern startad?
+        server.shutdown()
+        print("server shut down")
+        server.server_close()
+        print("server closed")
+        #theServer.
